@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           base64 --decode bootstrap/rootcastle-energy-scada-v1.0.0.zip.b64 > /tmp/rootcastle-energy-scada-v1.0.0.zip
-          echo "db34667c2f4959841a89e9bb848f8ae867a74f27addc18014acc51560c952870  /tmp/rootcastle-energy-scada-v1.0.0.zip" | sha256sum --check
+          echo "e1724573b5bb583721162fc283c0ccc2750daeae48508ee7945303e0858001de  /tmp/rootcastle-energy-scada-v1.0.0.zip" | sha256sum --check
           mkdir -p /tmp/rootcastle-energy-scada-package
           unzip -q /tmp/rootcastle-energy-scada-v1.0.0.zip -d /tmp/rootcastle-energy-scada-package
           rsync -a --delete \
@@ -111,12 +111,12 @@ jobs:
           - Mobil öncelikli Rootcastle SCADA arayüzü
           - Docker Compose, systemd, Prometheus ve sağlık endpointleri
           - Otomatik testler ve GitHub Actions CI
-          - Tamamen Türkçe README ve teknik dokümantasyon
+          - Tamamen Türkçe ve kapsamlı README
 
           ### Doğrulama
           - 12/12 otomatik test başarılı
           - Python compileall başarılı
-          - Arşiv SHA-256: `db34667c2f4959841a89e9bb848f8ae867a74f27addc18014acc51560c952870`
+          - Arşiv SHA-256: `e1724573b5bb583721162fc283c0ccc2750daeae48508ee7945303e0858001de`
           NOTES
 
           if gh release view v1.0.0 >/dev/null 2>&1; then
