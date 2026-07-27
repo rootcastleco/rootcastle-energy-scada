@@ -1,0 +1,134 @@
+name: Genişletilmiş Paketi İçe Aktar
+
+on:
+  push:
+    paths:
+      - "bootstrap/rootcastle-energy-scada-v1.0.0.zip.b64"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: expanded-package-import
+  cancel-in-progress: false
+
+jobs:
+  import-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu al
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Paket varlığını denetle
+        id: package
+        shell: bash
+        run: |
+          if [[ -f bootstrap/rootcastle-energy-scada-v1.0.0.zip.b64 ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Genişletilmiş paketi aç
+        if: steps.package.outputs.exists == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode bootstrap/rootcastle-energy-scada-v1.0.0.zip.b64 > /tmp/rootcastle-energy-scada-v1.0.0.zip
+          echo "db34667c2f4959841a89e9bb848f8ae867a74f27addc18014acc51560c952870  /tmp/rootcastle-energy-scada-v1.0.0.zip" | sha256sum --check
+          mkdir -p /tmp/rootcastle-energy-scada-package
+          unzip -q /tmp/rootcastle-energy-scada-v1.0.0.zip -d /tmp/rootcastle-energy-scada-package
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.github/workflows/import-expanded-package.yml' \
+            /tmp/rootcastle-energy-scada-package/ ./
+          rm -rf bootstrap
+
+      - name: Python ortamını kur
+        if: steps.package.outputs.exists == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Testleri çalıştır
+        if: steps.package.outputs.exists == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m pytest -q
+          python -m compileall -q app
+
+      - name: Genişletilmiş sürümü commit et
+        if: steps.package.outputs.exists == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Commit edilecek değişiklik yok."
+          else
+            git commit -m "feat: genişletilmiş Rootcastle Energy SCADA v1.0.0"
+            git push origin HEAD:main
+          fi
+
+      - name: Sürüm etiketlerini oluştur
+        if: steps.package.outputs.exists == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git tag -fa v1.0.0 -m "Rootcastle Energy SCADA v1.0.0"
+          git tag -fa v1 -m "Rootcastle Energy SCADA v1 kararlı seri"
+          git push origin refs/tags/v1.0.0 --force
+          git push origin refs/tags/v1 --force
+
+      - name: Türkçe GitHub Release oluştur
+        if: steps.package.outputs.exists == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/release-notes.md <<'NOTES'
+          ## Rootcastle Energy SCADA v1.0.0
+
+          İlk genişletilmiş public sürüm.
+
+          ### İçerik
+          - Marka bağımsız JSON cihaz profili mimarisi
+          - Doğrulanmış ENTES MPR-53S profili
+          - Modbus RTU, şeffaf TCP-RTU ve Modbus TCP
+          - 16/32/64-bit signed, unsigned ve IEEE-754 decode
+          - Çoklu byte/word order desteği
+          - FastAPI REST ve WebSocket servisleri
+          - SQLite WAL geçmiş veri ve enerji analitiği
+          - Mobil öncelikli Rootcastle SCADA arayüzü
+          - Docker Compose, systemd, Prometheus ve sağlık endpointleri
+          - Otomatik testler ve GitHub Actions CI
+          - Tamamen Türkçe README ve teknik dokümantasyon
+
+          ### Doğrulama
+          - 12/12 otomatik test başarılı
+          - Python compileall başarılı
+          - Arşiv SHA-256: `db34667c2f4959841a89e9bb848f8ae867a74f27addc18014acc51560c952870`
+          NOTES
+
+          if gh release view v1.0.0 >/dev/null 2>&1; then
+            gh release edit v1.0.0 \
+              --title "Rootcastle Energy SCADA v1.0.0" \
+              --notes-file /tmp/release-notes.md \
+              --latest
+            gh release upload v1.0.0 /tmp/rootcastle-energy-scada-v1.0.0.zip --clobber
+          else
+            gh release create v1.0.0 \
+              /tmp/rootcastle-energy-scada-v1.0.0.zip \
+              --title "Rootcastle Energy SCADA v1.0.0" \
+              --notes-file /tmp/release-notes.md \
+              --latest
+          fi
