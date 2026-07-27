@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "id": "entes-mpr53s",
+  "manufacturer": "ENTES",
+  "model": "MPR-53S",
+  "category": "power-quality-analyzer",
+  "protocol": "modbus",
+  "verification": "verified",
+  "notes": "Verified against the public ENTES MPR-53S register table. Read-only polling.",
+  "defaults": {"slave_id": 1, "baud_rate": 9600, "parity": "N", "stop_bits": 2},
+  "mandatory_fields": ["voltage_l1_v", "current_l1_a", "active_import_w", "frequency_hz"],
+  "blocks": [
+    {
+      "name": "live", "function_code": 3, "start": 0, "count": 86, "poll_class": "live",
+      "registers": [
+        {"key":"voltage_l1_v","address":0,"value_type":"u32","scale":0.1,"unit":"V","label":"L1 Faz Gerilimi","byte_order":"ABCD"},
+        {"key":"voltage_l2_v","address":2,"value_type":"u32","scale":0.1,"unit":"V","label":"L2 Faz Gerilimi","byte_order":"ABCD"},
+        {"key":"voltage_l3_v","address":4,"value_type":"u32","scale":0.1,"unit":"V","label":"L3 Faz Gerilimi","byte_order":"ABCD"},
+        {"key":"current_l1_a","address":6,"value_type":"u32","scale":0.001,"unit":"A","label":"L1 Faz Akımı","byte_order":"ABCD"},
+        {"key":"current_l2_a","address":8,"value_type":"u32","scale":0.001,"unit":"A","label":"L2 Faz Akımı","byte_order":"ABCD"},
+        {"key":"current_l3_a","address":10,"value_type":"u32","scale":0.001,"unit":"A","label":"L3 Faz Akımı","byte_order":"ABCD"},
+        {"key":"current_n_a","address":12,"value_type":"u32","scale":0.001,"unit":"A","label":"Nötr Akımı","byte_order":"ABCD"},
+        {"key":"voltage_l12_v","address":14,"value_type":"u32","scale":0.1,"unit":"V","label":"L1-L2 Gerilimi","byte_order":"ABCD"},
+        {"key":"voltage_l23_v","address":16,"value_type":"u32","scale":0.1,"unit":"V","label":"L2-L3 Gerilimi","byte_order":"ABCD"},
+        {"key":"voltage_l31_v","address":18,"value_type":"u32","scale":0.1,"unit":"V","label":"L3-L1 Gerilimi","byte_order":"ABCD"},
+        {"key":"active_l1_w","address":20,"value_type":"s32","scale":0.1,"unit":"W","label":"L1 Aktif Güç","byte_order":"ABCD"},
+        {"key":"active_l2_w","address":22,"value_type":"s32","scale":0.1,"unit":"W","label":"L2 Aktif Güç","byte_order":"ABCD"},
+        {"key":"active_l3_w","address":24,"value_type":"s32","scale":0.1,"unit":"W","label":"L3 Aktif Güç","byte_order":"ABCD"},
+        {"key":"reactive_l1_var","address":26,"value_type":"s32","scale":0.1,"unit":"var","label":"L1 Reaktif Güç","byte_order":"ABCD"},
+        {"key":"reactive_l2_var","address":28,"value_type":"s32","scale":0.1,"unit":"var","label":"L2 Reaktif Güç","byte_order":"ABCD"},
+        {"key":"reactive_l3_var","address":30,"value_type":"s32","scale":0.1,"unit":"var","label":"L3 Reaktif Güç","byte_order":"ABCD"},
+        {"key":"apparent_l1_va","address":32,"value_type":"u32","scale":0.1,"unit":"VA","label":"L1 Görünür Güç","byte_order":"ABCD"},
+        {"key":"apparent_l2_va","address":34,"value_type":"u32","scale":0.1,"unit":"VA","label":"L2 Görünür Güç","byte_order":"ABCD"},
+        {"key":"apparent_l3_va","address":36,"value_type":"u32","scale":0.1,"unit":"VA","label":"L3 Görünür Güç","byte_order":"ABCD"},
+        {"key":"cos_l1","address":38,"value_type":"s32","scale":0.001,"unit":"","label":"L1 Güç Faktörü","byte_order":"ABCD"},
+        {"key":"cos_l2","address":40,"value_type":"s32","scale":0.001,"unit":"","label":"L2 Güç Faktörü","byte_order":"ABCD"},
+        {"key":"cos_l3","address":42,"value_type":"s32","scale":0.001,"unit":"","label":"L3 Güç Faktörü","byte_order":"ABCD"},
+        {"key":"active_import_w","address":44,"value_type":"s32","scale":0.1,"unit":"W","label":"Toplam Import Aktif Güç","byte_order":"ABCD"},
+        {"key":"active_export_w","address":46,"value_type":"s32","scale":0.1,"unit":"W","label":"Toplam Export Aktif Güç","byte_order":"ABCD"},
+        {"key":"reactive_inductive_var","address":48,"value_type":"s32","scale":0.1,"unit":"var","label":"Toplam İndüktif Reaktif Güç","byte_order":"ABCD"},
+        {"key":"reactive_capacitive_var","address":50,"value_type":"s32","scale":0.1,"unit":"var","label":"Toplam Kapasitif Reaktif Güç","byte_order":"ABCD"},
+        {"key":"apparent_total_va","address":52,"value_type":"u32","scale":0.1,"unit":"VA","label":"Toplam Görünür Güç","byte_order":"ABCD"},
+        {"key":"cos_inductive","address":54,"value_type":"s32","scale":0.001,"unit":"","label":"Ortalama İndüktif Güç Faktörü","byte_order":"ABCD"},
+        {"key":"cos_capacitive","address":56,"value_type":"s32","scale":0.001,"unit":"","label":"Ortalama Kapasitif Güç Faktörü","byte_order":"ABCD"},
+        {"key":"frequency_hz","address":58,"value_type":"u32","scale":0.01,"unit":"Hz","label":"Frekans","byte_order":"ABCD"},
+        {"key":"thd_voltage_l1_pct","address":72,"value_type":"u32","scale":0.1,"unit":"%","label":"L1 Gerilim THD","byte_order":"ABCD"},
+        {"key":"thd_voltage_l2_pct","address":74,"value_type":"u32","scale":0.1,"unit":"%","label":"L2 Gerilim THD","byte_order":"ABCD"},
+        {"key":"thd_voltage_l3_pct","address":76,"value_type":"u32","scale":0.1,"unit":"%","label":"L3 Gerilim THD","byte_order":"ABCD"},
+        {"key":"thd_current_l1_pct","address":78,"value_type":"u32","scale":0.1,"unit":"%","label":"L1 Akım THD","byte_order":"ABCD"},
+        {"key":"thd_current_l2_pct","address":80,"value_type":"u32","scale":0.1,"unit":"%","label":"L2 Akım THD","byte_order":"ABCD"},
+        {"key":"thd_current_l3_pct","address":82,"value_type":"u32","scale":0.1,"unit":"%","label":"L3 Akım THD","byte_order":"ABCD"},
+        {"key":"digital_inputs","address":84,"value_type":"u16","scale":1.0,"unit":"","label":"Dijital Giriş Durumu","byte_order":"AB"}
+      ]
+    },
+    {
+      "name":"energy","function_code":3,"start":86,"count":32,"poll_class":"energy",
+      "registers":[
+        {"key":"energy_import_1_wh","address":86,"value_type":"u64","scale":1.0,"unit":"Wh","label":"Import Aktif Enerji 1","byte_order":"ABCDEFGH"},
+        {"key":"energy_export_1_wh","address":90,"value_type":"u64","scale":1.0,"unit":"Wh","label":"Export Aktif Enerji 1","byte_order":"ABCDEFGH"},
+        {"key":"energy_inductive_1_varh","address":94,"value_type":"u64","scale":1.0,"unit":"varh","label":"İndüktif Reaktif Enerji 1","byte_order":"ABCDEFGH"},
+        {"key":"energy_capacitive_1_varh","address":98,"value_type":"u64","scale":1.0,"unit":"varh","label":"Kapasitif Reaktif Enerji 1","byte_order":"ABCDEFGH"},
+        {"key":"energy_import_2_wh","address":102,"value_type":"u64","scale":1.0,"unit":"Wh","label":"Import Aktif Enerji 2","byte_order":"ABCDEFGH"},
+        {"key":"energy_export_2_wh","address":106,"value_type":"u64","scale":1.0,"unit":"Wh","label":"Export Aktif Enerji 2","byte_order":"ABCDEFGH"},
+        {"key":"energy_inductive_2_varh","address":110,"value_type":"u64","scale":1.0,"unit":"varh","label":"İndüktif Reaktif Enerji 2","byte_order":"ABCDEFGH"},
+        {"key":"energy_capacitive_2_varh","address":114,"value_type":"u64","scale":1.0,"unit":"varh","label":"Kapasitif Reaktif Enerji 2","byte_order":"ABCDEFGH"}
+      ]
+    }
+  ]
+}
