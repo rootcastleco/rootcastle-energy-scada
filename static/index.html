@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Rootcastle Energy SCADA</title>
+  <style>
+    :root{--black:#000;--blue:#0E3D8A;--green:#228B55;--bg:#05080d;--panel:#0c121a;--line:#1e2a37;--text:#f4f7fb;--muted:#8ea0b3}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#0e3d8a40,transparent 36%),radial-gradient(circle at 85% 20%,#228b5530,transparent 34%),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}.shell{max-width:1440px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.mark{width:44px;height:44px;border:2px solid #fff;position:relative}.mark:after{content:"";position:absolute;left:12px;top:9px;width:18px;height:24px;background:linear-gradient(135deg,var(--blue),var(--green));clip-path:polygon(40% 0,100% 0,64% 42%,100% 42%,0 100%,35% 53%,0 53%)}h1{font-size:20px;margin:0}.sub{color:var(--muted);font-size:12px}.status{padding:8px 12px;border:1px solid #2b7650;background:#163324;border-radius:999px;font-size:12px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:linear-gradient(180deg,#101822,#0a1017);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 18px 50px #0007}.hero{grid-column:span 12;display:grid;grid-template-columns:1.2fr .8fr;align-items:center;min-height:260px}.metric{font-size:clamp(48px,9vw,105px);font-weight:750;letter-spacing:-.06em}.unit{font-size:.26em;color:#76adff;letter-spacing:.08em}.pulse{width:180px;height:180px;border-radius:50%;margin:auto;background:radial-gradient(circle,#228b5580 0 8%,transparent 9% 25%,#0e3d8a55 26% 28%,transparent 29% 45%,#228b553d 46% 48%,transparent 49%);animation:spin 8s linear infinite;box-shadow:0 0 70px #0e3d8a66}@keyframes spin{to{transform:rotate(360deg)}}.small{grid-column:span 3}.wide{grid-column:span 6}.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.12em}.value{font-size:30px;font-weight:700;margin-top:8px}.bars{display:flex;align-items:end;gap:8px;height:140px;margin-top:16px}.bar{flex:1;background:linear-gradient(var(--green),var(--blue));border-radius:6px 6px 2px 2px;min-height:12px}.legend{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}.footer{margin-top:20px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}@media(max-width:760px){.shell{padding:14px}.hero{grid-template-columns:1fr}.pulse{width:120px;height:120px}.small,.wide{grid-column:span 12}.metric{font-size:58px}.top{align-items:flex-start}.status{white-space:nowrap}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="top"><div class="brand"><div class="mark"></div><div><h1>Rootcastle Energy SCADA</h1><div class="sub">Vendor-neutral industrial energy telemetry</div></div></div><div class="status" id="status">CONNECTING</div></header>
+  <section class="grid">
+    <article class="card hero"><div><div class="label">Total active power</div><div class="metric"><span id="kw">--</span><span class="unit"> kW</span></div><div class="sub">Read-only telemetry · profile-based device integration</div></div><div class="pulse"></div></article>
+    <article class="card small"><div class="label">Average voltage</div><div class="value"><span id="volt">--</span> V</div></article>
+    <article class="card small"><div class="label">Average current</div><div class="value"><span id="amp">--</span> A</div></article>
+    <article class="card small"><div class="label">Inductive reactive</div><div class="value"><span id="ind">--</span> kVAr</div></article>
+    <article class="card small"><div class="label">Capacitive reactive</div><div class="value"><span id="cap">--</span> kVAr</div></article>
+    <article class="card wide"><div class="label">Last samples</div><div class="bars" id="bars"></div><div class="legend"><span>Older</span><span>Now</span></div></article>
+    <article class="card wide"><div class="label">Power quality</div><div class="value"><span id="pf">--</span> PF</div><div class="value"><span id="hz">--</span> Hz</div><div class="sub" id="profile">Profile: --</div></article>
+  </section>
+  <footer class="footer"><span>Rootcastle Engineering & Innovation</span><span>batuhanayribas.com</span></footer>
+</main>
+<script>
+const history=[];const el=id=>document.getElementById(id);function avg(a){return a.reduce((x,y)=>x+y,0)/a.length}function render(d){el('kw').textContent=d.active_power_kw.toFixed(1);el('volt').textContent=avg(d.voltage_v).toFixed(1);el('amp').textContent=avg(d.current_a).toFixed(1);el('ind').textContent=d.reactive_inductive_kvar.toFixed(1);el('cap').textContent=d.reactive_capacitive_kvar.toFixed(1);el('pf').textContent=d.power_factor.toFixed(2);el('hz').textContent=d.frequency_hz.toFixed(2);el('profile').textContent='Profile: '+d.profile+' · '+d.quality;history.push(d.active_power_kw);if(history.length>24)history.shift();el('bars').innerHTML=history.map(v=>`<div class="bar" style="height:${Math.max(8,Math.min(100,v))}%"></div>`).join('');el('status').textContent='LIVE';}async function poll(){try{const r=await fetch('/api/v1/live');render(await r.json())}catch(e){el('status').textContent='OFFLINE'}}poll();setInterval(poll,2000);
+</script>
+</body>
+</html>
