@@ -3,7 +3,7 @@ name: Genişletilmiş Paketi İçe Aktar
 on:
   push:
     paths:
-      - "bootstrap/rootcastle-energy-scada-v1.0.0.zip.b64"
+      - "bootstrap/IMPORT_READY"
 
 permissions:
   contents: write
@@ -21,23 +21,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Paket varlığını denetle
-        id: package
-        shell: bash
-        run: |
-          if [[ -f bootstrap/rootcastle-energy-scada-v1.0.0.zip.b64 ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Genişletilmiş paketi aç
-        if: steps.package.outputs.exists == 'true'
+      - name: Paket parçalarını doğrula ve birleştir
         shell: bash
         run: |
           set -euo pipefail
-          base64 --decode bootstrap/rootcastle-energy-scada-v1.0.0.zip.b64 > /tmp/rootcastle-energy-scada-v1.0.0.zip
-          echo "e1724573b5bb583721162fc283c0ccc2750daeae48508ee7945303e0858001de  /tmp/rootcastle-energy-scada-v1.0.0.zip" | sha256sum --check
+          test -f bootstrap/IMPORT_READY
+          test -f bootstrap/package.part-00
+          cat bootstrap/package.part-* > /tmp/rootcastle-energy-scada-v1.0.0.zip.b64
+          base64 --decode /tmp/rootcastle-energy-scada-v1.0.0.zip.b64 > /tmp/rootcastle-energy-scada-v1.0.0.zip
+          echo "ea6b13fab96c57a742c85a74801ad0b23f3a1189775320f0f632d1d6884262ad  /tmp/rootcastle-energy-scada-v1.0.0.zip" | sha256sum --check
+
+      - name: Genişletilmiş paketi aç
+        shell: bash
+        run: |
+          set -euo pipefail
           mkdir -p /tmp/rootcastle-energy-scada-package
           unzip -q /tmp/rootcastle-energy-scada-v1.0.0.zip -d /tmp/rootcastle-energy-scada-package
           rsync -a --delete \
@@ -47,14 +44,12 @@ jobs:
           rm -rf bootstrap
 
       - name: Python ortamını kur
-        if: steps.package.outputs.exists == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Testleri çalıştır
-        if: steps.package.outputs.exists == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -64,7 +59,6 @@ jobs:
           python -m compileall -q app
 
       - name: Genişletilmiş sürümü commit et
-        if: steps.package.outputs.exists == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -78,8 +72,28 @@ jobs:
             git push origin HEAD:main
           fi
 
+      - name: Repo açıklaması ve konu etiketlerini ayarla
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}" \
+            -f description='Marka bağımsız, mobil öncelikli Modbus enerji izleme ve SCADA platformu.' \
+            -f homepage='https://batuhanayribas.com'
+          gh api --method PUT "repos/${GITHUB_REPOSITORY}/topics" \
+            -f 'names[]=scada' \
+            -f 'names[]=modbus' \
+            -f 'names[]=energy-monitoring' \
+            -f 'names[]=industrial-iot' \
+            -f 'names[]=fastapi' \
+            -f 'names[]=rs485' \
+            -f 'names[]=power-quality' \
+            -f 'names[]=prometheus' \
+            -f 'names[]=docker' \
+            -f 'names[]=turkce'
+
       - name: Sürüm etiketlerini oluştur
-        if: steps.package.outputs.exists == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -89,7 +103,6 @@ jobs:
           git push origin refs/tags/v1 --force
 
       - name: Türkçe GitHub Release oluştur
-        if: steps.package.outputs.exists == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -104,7 +117,7 @@ jobs:
           - Marka bağımsız JSON cihaz profili mimarisi
           - Doğrulanmış ENTES MPR-53S profili
           - Modbus RTU, şeffaf TCP-RTU ve Modbus TCP
-          - 16/32/64-bit signed, unsigned ve IEEE-754 decode
+          - 16/32/64-bit signed, unsigned ve IEEE-754 çözümleme
           - Çoklu byte/word order desteği
           - FastAPI REST ve WebSocket servisleri
           - SQLite WAL geçmiş veri ve enerji analitiği
@@ -116,19 +129,12 @@ jobs:
           ### Doğrulama
           - 12/12 otomatik test başarılı
           - Python compileall başarılı
-          - Arşiv SHA-256: `e1724573b5bb583721162fc283c0ccc2750daeae48508ee7945303e0858001de`
+          - Arşiv SHA-256: `ea6b13fab96c57a742c85a74801ad0b23f3a1189775320f0f632d1d6884262ad`
           NOTES
 
           if gh release view v1.0.0 >/dev/null 2>&1; then
-            gh release edit v1.0.0 \
-              --title "Rootcastle Energy SCADA v1.0.0" \
-              --notes-file /tmp/release-notes.md \
-              --latest
+            gh release edit v1.0.0 --title "Rootcastle Energy SCADA v1.0.0" --notes-file /tmp/release-notes.md --latest
             gh release upload v1.0.0 /tmp/rootcastle-energy-scada-v1.0.0.zip --clobber
           else
-            gh release create v1.0.0 \
-              /tmp/rootcastle-energy-scada-v1.0.0.zip \
-              --title "Rootcastle Energy SCADA v1.0.0" \
-              --notes-file /tmp/release-notes.md \
-              --latest
+            gh release create v1.0.0 /tmp/rootcastle-energy-scada-v1.0.0.zip --title "Rootcastle Energy SCADA v1.0.0" --notes-file /tmp/release-notes.md --latest
           fi
