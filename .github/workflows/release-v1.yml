@@ -1,6 +1,7 @@
 name: v1.0.0 Sürümünü Yayımla
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "release/READY"
@@ -17,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Testleri çalıştır
+      - name: Python ortamını kur
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -46,12 +47,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -f release/READY
-          git commit -m "chore: v1.0.0 sürüm tetikleyicisini temizle"
-          git push origin HEAD:main
+          if [ -f release/READY ]; then
+            git rm -f release/READY
+            git commit -m "chore: v1.0.0 sürüm tetikleyicisini temizle"
+            git push origin HEAD:main
+          fi
 
       - name: Etiketleri oluştur
         run: |
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
           git tag -fa v1.0.0 -m "Rootcastle Energy SCADA v1.0.0"
           git tag -fa v1 -m "Rootcastle Energy SCADA v1 kararlı seri"
           git push origin refs/tags/v1.0.0 --force
