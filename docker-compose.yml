@@ -1,0 +1,15 @@
+services:
+  energy-scada:
+    build: .
+    container_name: rootcastle-energy-scada
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
